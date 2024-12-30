@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * Implements hook_form_FORM_ID_alter() to modify the checkout form.
+ */
+function custom_checkout_form_commerce_checkout_form_checkout_alter(&$form, &$form_state, $form_id) {
+  global $user; // Get the global user object
+
+  // Check if the 'cart_contents' element exists before modifying it
+  if (isset($form['cart_contents'])) {
+    $form['cart_contents']['#prefix'] = '<div class="custom-cart-contents-wrapper col-lg-8">';
+    $form['cart_contents']['#suffix'] = '</div>';
+    $form['cart_contents']['#weight'] = -10;
+
+    // dpm($form);
+  }
+
+  // Check if necessary form elements exist before modifying them
+  if (isset($form['commerce_shipping']) && isset($form['commerce_payment']) && isset($form['customer_profile_billing']) && isset($form['buttons'])) {
+    // Create a new element to wrap the forms and checkbox
+    $form['form_wrapper'] = array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('col-lg-4')),
+      '#weight' => -5, // Adjust the weight to control the placement of the wrapper
+    );
+
+    // Move the form elements into the new wrapper
+    if (user_is_anonymous() && isset($form['account'])) {
+      $form['form_wrapper']['account'] = $form['account'];
+      unset($form['account']);
+    }
+
+    $form['form_wrapper']['customer_profile_billing'] = $form['customer_profile_billing'];
+    // $form['form_wrapper']['commerce_shipping'] = $form['commerce_shipping'];
+    $form['form_wrapper']['commerce_payment'] = $form['commerce_payment'];
+    $form['form_wrapper']['buttons'] = $form['buttons'];
+
+    // Remove the original form elements
+    // unset($form['commerce_shipping']);
+    unset($form['commerce_payment']);
+    unset($form['customer_profile_billing']);
+    unset($form['buttons']);
+  }
+}
+
